@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class OrdersScreens extends StatelessWidget {
-  const OrdersScreens({super.key});
+  static const String routeName = '\OrdersScreens';
 
   @override
   Widget build(BuildContext context) {
