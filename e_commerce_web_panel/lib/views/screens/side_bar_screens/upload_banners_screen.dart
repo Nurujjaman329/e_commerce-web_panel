@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class UploadBannersScreen extends StatefulWidget {
@@ -9,7 +11,12 @@ class UploadBannersScreen extends StatefulWidget {
 }
 
 class _UploadBannersScreenState extends State<UploadBannersScreen> {
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   dynamic _image;
+
+  String? fileName;
 
   pickImage() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -20,6 +27,30 @@ class _UploadBannersScreenState extends State<UploadBannersScreen> {
     if (result != null) {
       setState(() {
         _image = result.files.first.bytes;
+
+        fileName = result.files.first.name;
+      });
+    }
+  }
+
+  uploadBannersToStorage(dynamic image) async {
+    Reference ref = _storage.ref().child('Banners').child(fileName!);
+
+    UploadTask uploadTask = ref.putData(image);
+
+    TaskSnapshot snapshot = await uploadTask;
+
+    String downloadUrl = await snapshot.ref.getDownloadURL();
+
+    return downloadUrl;
+  }
+
+  uploadToFirebaseStore() async {
+    if (_image != null) {
+      String imageUrl = uploadBannersToStorage(_image);
+
+      await _firestore.collection('banners').doc(fileName).set({
+        'image': imageUrl,
       });
     }
   }
@@ -54,7 +85,12 @@ class _UploadBannersScreenState extends State<UploadBannersScreen> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Center(
-                    child: Text('Banners'),
+                    child: _image != null
+                        ? Image.memory(
+                            _image,
+                            fit: BoxFit.cover,
+                          )
+                        : Text('Banners'),
                   ),
                 ),
               ),
@@ -62,7 +98,9 @@ class _UploadBannersScreenState extends State<UploadBannersScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  uploadToFirebaseStore();
+                },
                 child: Text(
                   'Save',
                   style: TextStyle(
