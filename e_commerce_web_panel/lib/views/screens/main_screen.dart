@@ -79,7 +79,13 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.blue,
-          title: Text('Management'),
+          title: Text(
+            'Management',
+            style: TextStyle(
+              color: Colors.white,
+            ),
+          ),
+          iconTheme: IconThemeData(color: Colors.white),
         ),
         sideBar: SideBar(
           items: [
